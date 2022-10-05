@@ -1,0 +1,10 @@
+version: 2
+updates:
+- package-ecosystem: pip
+  directory: /
+  assignees:
+  - Fleshgrinder
+  reviewers:
+  - Fleshgrinder
+  schedule:
+    interval: weekly

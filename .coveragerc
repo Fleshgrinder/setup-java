@@ -1,0 +1,5 @@
+[run]
+branch = True
+include =
+    ./src/resolve_arch.py
+    ./src/resolve_version.py

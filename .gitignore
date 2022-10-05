@@ -1,0 +1,9 @@
+/.idea/*
+!/.idea/icon*.svg
+
+.py*cache
+*.pyc
+/htmlcov/
+/.coverage
+/coverage.xml
+/install

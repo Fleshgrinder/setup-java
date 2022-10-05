@@ -1,0 +1,83 @@
+name: Test
+on:
+  pull_request:
+    paths-ignore:
+    - .idea/icon*.svg
+    - .editorconfig
+    - .gitignore
+    - '**.md'
+  push:
+    branches:
+    - main
+    paths-ignore:
+    - .idea/icon*.svg
+    - .editorconfig
+    - .gitignore
+    - '**.md'
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  unit:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+    - uses: actions/checkout@v3
+    - run: make
+    - uses: codecov/codecov-action@v3
+      env:
+        OS: ${{ matrix.os }}
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        files: coverage.xml
+        env_vars: OS
+        fail_ci_if_error: true
+
+  input:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+    - uses: actions/checkout@v3
+    - run: python3 bin/latest.py
+    - name: fleshgrinder/setup-java@${{ github.ref_name }}
+      uses: ./
+      with:
+        version: ${{ env.JAVA_VERSION_LATEST }}
+    - run: python3 bin/test.py
+
+  default:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+    - uses: actions/checkout@v3
+    - run: python3 bin/latest.py
+    - name: fleshgrinder/setup-java@${{ github.ref_name }}
+      uses: ./
+      env:
+        JAVA_DEFAULT_VERSION: ${{ env.JAVA_VERSION_LATEST }}
+        JAVA_DEFAULT_DISTRIBUTION: zulu
+        JAVA_DEFAULT_PACKAGE_TYPE: jre
+    - run: python3 bin/test.py
+
+  file:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+    - uses: actions/checkout@v3
+    - run: python3 bin/latest.py
+    - run: echo "$JAVA_VERSION_LATEST" >.java-version
+      shell: bash
+    - name: fleshgrinder/setup-java@${{ github.ref_name }}
+      uses: ./
+    - run: python3 bin/test.py
